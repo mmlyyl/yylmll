@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.aux
+*.log
+*.out
+*.spl
+*.4tc
+*.xref
+*.dvi
+*.tmp
+*.pdf
+*.docx
+*.zip
+paper.tex
+svjour3-custom.cls
