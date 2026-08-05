@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>约会邀请 💕</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 30%, #f48fb1 60%, #fce4ec 100%);
+  background-size: 400% 400%;
+  animation: bgShift 15s ease infinite;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  position: relative;
+}
+
+@keyframes bgShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ── 花瓣 ── */
+.petal {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  animation: fall linear infinite;
+}
+.petal::before {
+  content: '';
+  display: block;
+  width: 100%; height: 100%;
+  border-radius: 50% 0 50% 0;
+  opacity: 0.6;
+}
+@keyframes fall {
+  0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 0.8; }
+  25% { transform: translateY(25vh) rotate(90deg) translateX(30px); }
+  50% { transform: translateY(50vh) rotate(180deg) translateX(-20px); opacity: 0.6; }
+  75% { transform: translateY(75vh) rotate(270deg) translateX(15px); }
+  100% { transform: translateY(110vh) rotate(360deg) translateX(0); opacity: 0; }
+}
+
+/* ── 主容器 ── */
+.container {
+  position: relative; z-index: 1;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 48px 40px;
+  max-width: 520px; width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(245,143,175,0.25), 0 0 0 1px rgba(255,255,255,0.6);
+  transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+h1 {
+  font-size: 2rem; color: #d81b60; margin-bottom: 12px;
+  font-weight: 700; letter-spacing: 1px;
+}
+.subtitle { font-size: 0.95rem; color: #ad1457; margin-bottom: 32px; opacity: 0.8; }
+
+/* ── 按钮 ── */
+.buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  padding: 14px 36px; font-size: 1.1rem; border-radius: 50px;
+  border: none; cursor: pointer; font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  letter-spacing: 1px; position: relative; overflow: hidden;
+  font-family: inherit;
+}
+.btn-yes {
+  background: linear-gradient(135deg, #e91e63, #f06292);
+  color: #fff; box-shadow: 0 6px 24px rgba(233,30,99,0.4);
+  font-size: 1.3rem; padding: 16px 48px;
+}
+.btn-yes:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 32px rgba(233,30,99,0.5); }
+.btn-no {
+  background: #fff; color: #ad1457;
+  border: 2px solid #f48fb1;
+}
+.btn-no:hover { background: #fce4ec; transform: translateY(-2px); }
+.btn-maybe {
+  background: #fff; color: #6a1b9a;
+  border: 2px solid #ce93d8;
+}
+.btn-maybe:hover { background: #f3e5f5; transform: translateY(-2px); }
+
+.btn-no.shrink { transform: scale(0.7); opacity: 0.5; pointer-events: none; }
+
+/* ── 爱心动画 ── */
+.heart { display: inline-block; animation: heartbeat 0.6s ease infinite; }
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.2); }
+}
+
+/* ── 庆祝 ── */
+.celebrate { display: none; }
+.celebrate.show { display: block; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.celebrate-emoji { font-size: 5rem; margin-bottom: 8px; }
+.celebrate-text { font-size: 1.6rem; color: #d81b60; font-weight: 700; margin-bottom: 24px; }
+
+/* ── 步骤 ── */
+.step { display: none; }
+.step.active { display: block; animation: fadeSlide 0.5s ease; }
+@keyframes fadeSlide {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 彩带 ── */
+.confetti-container {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 999;
+}
+.confetti-piece {
+  position: absolute; animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── 日历选择 ── */
+.calendar-section { margin-top: 16px; }
+.calendar-section h2 {
+  font-size: 1.3rem; color: #d81b60; margin-bottom: 16px;
+}
+.date-time-group {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.date-input, .time-input {
+  padding: 12px 20px; border-radius: 16px; border: 2px solid #f8bbd0;
+  font-size: 1rem; color: #880e4f; background: #fff;
+  font-family: inherit; cursor: pointer; outline: none;
+  transition: border-color 0.3s;
+}
+.date-input:focus, .time-input:focus { border-color: #e91e63; }
+
+/* ── 食物九宫格 ── */
+.food-grid-section h2 {
+  font-size: 1.3rem; color: #d81b60; margin-bottom: 16px;
+}
+.food-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+.food-item {
+  background: #fff; border: 2px solid #f8bbd0; border-radius: 18px;
+  padding: 16px 8px; cursor: pointer; transition: all 0.3s;
+  font-size: 1rem; color: #880e4f; font-weight: 500;
+  font-family: inherit;
+}
+.food-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(233,30,99,0.2); border-color: #e91e63; }
+.food-item .food-emoji { font-size: 2rem; display: block; margin-bottom: 6px; }
+.food-item.selected {
+  background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+  border-color: #e91e63; box-shadow: 0 4px 16px rgba(233,30,99,0.3);
+}
+
+/* ── 邀请卡片 ── */
+.invitation-card {
+  display: none;
+  background: linear-gradient(135deg, #fff5f7, #fce4ec);
+  border-radius: 24px; padding: 32px 24px;
+  border: 2px solid #f48fb1;
+  box-shadow: 0 12px 40px rgba(233,30,99,0.2);
+  margin-top: 20px;
+}
+.invitation-card.show { display: block; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.invitation-card h3 { color: #d81b60; font-size: 1.2rem; margin-bottom: 12px; }
+.invitation-card .detail { color: #880e4f; font-size: 0.95rem; margin: 6px 0; }
+.invitation-card .detail span { font-weight: 700; color: #d81b60; }
+.invitation-card .big-heart { font-size: 3rem; margin-top: 12px; }
+
+.download-btn {
+  margin-top: 16px;
+  padding: 12px 32px; border-radius: 50px;
+  background: linear-gradient(135deg, #e91e63, #f06292);
+  color: #fff; border: none; font-size: 1rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 6px 20px rgba(233,30,99,0.35);
+  transition: all 0.3s;
+}
+.download-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(233,30,99,0.45); }
+
+/* ── 响应式 ── */
+@media (max-width: 480px) {
+  .container { padding: 32px 20px; }
+  h1 { font-size: 1.5rem; }
+  .btn { padding: 12px 24px; font-size: 1rem; }
+  .btn-yes { font-size: 1.1rem; padding: 14px 36px; }
+  .food-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .food-item { padding: 12px 4px; font-size: 0.85rem; }
+  .food-item .food-emoji { font-size: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- 花瓣容器 -->
+<div id="petals"></div>
+
+<!-- 彩带容器 -->
+<div class="confetti-container" id="confetti"></div>
+
+<!-- 主界面 -->
+<div class="container" id="mainContainer">
+
+  <!-- 步骤 1: 首次邀请 -->
+  <div class="step active" id="step1">
+    <h1>🌸 你愿意和我约会吗？ 🌸</h1>
+    <p class="subtitle">我等这一天好久啦...</p>
+    <div class="buttons">
+      <button class="btn btn-yes" onclick="sayYes()">愿意！💕</button>
+      <button class="btn btn-no" id="btnNo1" onclick="toStep2()">不愿意 😢</button>
+    </div>
+  </div>
+
+  <!-- 步骤 2: 再想想 -->
+  <div class="step" id="step2">
+    <h1>🥺 不再考虑一下吗？</h1>
+    <p class="subtitle">我会让你开心的~</p>
+    <div class="buttons">
+      <button class="btn btn-yes" onclick="sayYes()">愿意！💕</button>
+      <button class="btn btn-maybe" onclick="toStep3()">你再想想嘛 🤔</button>
+    </div>
+  </div>
+
+  <!-- 步骤 3: 真的不要？ -->
+  <div class="step" id="step3">
+    <h1>😢 真的不再考虑一下吗？</h1>
+    <p class="subtitle">我保证会是个超棒的约会！</p>
+    <div class="buttons">
+      <button class="btn btn-yes" onclick="sayYes()">愿意！💕</button>
+      <button class="btn btn-no" onclick="toStep4()">真的不和我约会 💔</button>
+    </div>
+  </div>
+
+  <!-- 步骤 4: 最后一个机会 -->
+  <div class="step" id="step4">
+    <h1>💝 就和我约会嘛~</h1>
+    <p class="subtitle">你看，只剩这一个选项了...</p>
+    <div class="buttons">
+      <button class="btn btn-yes" style="font-size:1.5rem; padding:20px 60px;" onclick="sayYes()">
+        愿意！💕
+      </button>
+    </div>
+  </div>
+
+  <!-- 步骤 5: 庆祝 -->
+  <div class="step" id="step5">
+    <div class="celebrate show">
+      <div class="celebrate-emoji">🥰</div>
+      <div class="celebrate-text">太棒了！<br>你愿意和我约会了！</div>
+    </div>
+  </div>
+
+  <!-- 步骤 6: 日历选择 -->
+  <div class="step" id="step6">
+    <div class="calendar-section">
+      <h2>📅 选个约会时间吧~</h2>
+      <div class="date-time-group">
+        <input type="date" class="date-input" id="dateInput" min="">
+        <input type="time" class="time-input" id="timeInput" value="18:00">
+      </div>
+      <button class="btn btn-yes" onclick="pickDateTime()" style="font-size:1rem; padding:12px 32px;">
+        确定时间 ✨
+      </button>
+    </div>
+  </div>
+
+  <!-- 步骤 7: 食物选择 -->
+  <div class="step" id="step7">
+    <div class="food-grid-section">
+      <h2>🍽️ 想吃什么呢？</h2>
+      <div class="food-grid" id="foodGrid">
+        <button class="food-item" onclick="selectFood(this, '🥩 烤肉')">
+          <span class="food-emoji">🥩</span>烤肉
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍲 火锅')">
+          <span class="food-emoji">🍲</span>火锅
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🌶️ 麻辣烫')">
+          <span class="food-emoji">🌶️</span>麻辣烫
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍢 串串')">
+          <span class="food-emoji">🍢</span>串串
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍖 烧烤')">
+          <span class="food-emoji">🍖</span>烧烤
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍣 日料')">
+          <span class="food-emoji">🍣</span>日料
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍝 西餐')">
+          <span class="food-emoji">🍝</span>西餐
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍰 甜品')">
+          <span class="food-emoji">🍰</span>甜品
+        </button>
+        <button class="food-item" onclick="selectFood(this, '🍜 小吃')">
+          <span class="food-emoji">🍜</span>小吃
+        </button>
+      </div>
+      <button class="btn btn-yes" id="foodConfirmBtn" onclick="confirmFood()" disabled
+              style="font-size:1rem; padding:12px 32px; opacity:0.5;">
+        就吃这个！🎉
+      </button>
+    </div>
+  </div>
+
+  <!-- 步骤 8: 最终邀请卡 -->
+  <div class="step" id="step8">
+    <h1>💌 约会邀请函</h1>
+    <div class="invitation-card show" id="finalCard">
+      <div class="big-heart">💖</div>
+      <h3>我们的约会</h3>
+      <p class="detail">📅 时间：<span id="cardDate">--</span></p>
+      <p class="detail">🍽️ 美食：<span id="cardFood">--</span></p>
+      <p class="detail" style="margin-top:16px; color:#ad1457;">
+        期待和你的第一次约会~
+      </p>
+    </div>
+    <button class="download-btn" onclick="downloadInvitation()">
+      💾 保存邀请函
+    </button>
+    <p style="margin-top:12px; font-size:0.8rem; color:#ad1457; opacity:0.7;">
+      邀请已自动保存，发给 ta 吧~
+    </p>
+  </div>
+
+</div>
+
+<script>
+// ── 花瓣生成 ──
+(function createPetals() {
+  var colors = ['#f48fb1','#f06292','#ec407a','#e91e63','#f8bbd0','#fce4ec','#ff80ab','#ff4081'];
+  var petalsEl = document.getElementById('petals');
+  for (var i = 0; i < 35; i++) {
+    var petal = document.createElement('div');
+    petal.className = 'petal';
+    var size = 8 + Math.random() * 14;
+    petal.style.cssText =
+      'left:' + Math.random() * 100 + '%;' +
+      'width:' + size + 'px; height:' + (size * 1.4) + 'px;' +
+      'animation-duration:' + (8 + Math.random() * 12) + 's;' +
+      'animation-delay:' + Math.random() * 10 + 's;';
+    petal.querySelector('::before');
+    petal.style.setProperty('--petal-color', colors[Math.floor(Math.random() * colors.length)]);
+    // set bg via inline
+    petal.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    petal.style.borderRadius = '50% 0 50% 0';
+    petalsEl.appendChild(petal);
+  }
+})();
+
+// ── 步骤切换 ──
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+// ── 按钮逻辑 ──
+var noCount = 0;
+
+function toStep2() { noCount++; showStep('step2'); }
+function toStep3() { showStep('step3'); }
+function toStep4() { showStep('step4'); }
+
+function sayYes() {
+  showStep('step5');
+  launchConfetti();
+  // 3秒后进入日历
+  setTimeout(function() { showStep('step6'); setMinDate(); }, 2500);
+}
+
+// ── 彩带 ──
+function launchConfetti() {
+  var container = document.getElementById('confetti');
+  var colors = ['#e91e63','#f48fb1','#f06292','#ff80ab','#ff4081','#ffd54f','#ce93d8','#80deea'];
+  for (var i = 0; i < 80; i++) {
+    var piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText =
+      'left:' + Math.random() * 100 + '%;' +
+      'top:' + (-10 - Math.random() * 40) + 'px;' +
+      'width:' + (6 + Math.random() * 10) + 'px;' +
+      'height:' + (6 + Math.random() * 14) + 'px;' +
+      'background:' + colors[Math.floor(Math.random() * colors.length)] + ';' +
+      'border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';' +
+      'animation-duration:' + (2 + Math.random() * 3) + 's;' +
+      'animation-delay:' + Math.random() * 1.5 + 's;';
+    container.appendChild(piece);
+    // 自动清理
+    setTimeout(function() { piece.remove(); }, 4000);
+  }
+}
+
+// ── 日历最小日期设为今天 ──
+function setMinDate() {
+  var now = new Date();
+  var yyyy = now.getFullYear();
+  var mm = String(now.getMonth() + 1).padStart(2, '0');
+  var dd = String(now.getDate()).padStart(2, '0');
+  document.getElementById('dateInput').min = yyyy + '-' + mm + '-' + dd;
+  document.getElementById('dateInput').value = yyyy + '-' + mm + '-' + dd;
+}
+
+var selectedDateTime = '';
+function pickDateTime() {
+  var date = document.getElementById('dateInput').value;
+  var time = document.getElementById('timeInput').value;
+  if (!date) { alert('请选择约会日期哦~ 📅'); return; }
+  if (!time) { alert('请选择约会时间哦~ ⏰'); return; }
+  selectedDateTime = date + ' ' + time;
+  showStep('step7');
+}
+
+// ── 食物选择 ──
+var selectedFood = '';
+function selectFood(el, foodName) {
+  document.querySelectorAll('.food-item').forEach(function(item) { item.classList.remove('selected'); });
+  el.classList.add('selected');
+  selectedFood = foodName;
+  var btn = document.getElementById('foodConfirmBtn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+}
+
+function confirmFood() {
+  if (!selectedFood) return;
+  // 填充邀请卡
+  document.getElementById('cardDate').textContent = selectedDateTime;
+  document.getElementById('cardFood').textContent = selectedFood;
+  showStep('step8');
+  // 自动保存
+  saveInvitation();
+}
+
+// ── 保存邀请 ──
+function saveInvitation() {
+  var invitation = {
+    date: selectedDateTime,
+    food: selectedFood,
+    createdAt: new Date().toISOString()
+  };
+  // 存 localStorage
+  localStorage.setItem('date-invitation', JSON.stringify(invitation));
+  // 也存为全局变量供下载
+  window._invitation = invitation;
+}
+
+// ── 下载邀请函 ──
+function downloadInvitation() {
+  var inv = window._invitation || JSON.parse(localStorage.getItem('date-invitation'));
+  if (!inv) return;
+
+  var htmlContent =
+'<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>约会邀请函</title>' +
+'<style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;' +
+'background:linear-gradient(135deg,#fce4ec,#f8bbd0,#f48fb1);display:flex;align-items:center;' +
+'justify-content:center;font-family:"PingFang SC","Microsoft YaHei",sans-serif}' +
+'.card{background:rgba(255,255,255,0.85);border-radius:24px;padding:48px 40px;max-width:480px;' +
+'text-align:center;box-shadow:0 20px 60px rgba(233,30,99,0.2)}' +
+'h1{color:#d81b60;font-size:1.8rem;margin-bottom:8px}' +
+'.heart{font-size:4rem;margin:16px 0}' +
+'.detail{color:#880e4f;font-size:1.1rem;margin:8px 0}' +
+'.detail span{font-weight:700;color:#d81b60}' +
+'.footer{margin-top:24px;color:#ad1457;font-size:0.9rem}</style></head><body>' +
+'<div class="card"><div class="heart">💖</div><h1>我们的约会邀请函</h1>' +
+'<p class="detail">📅 时间：<span>' + inv.date + '</span></p>' +
+'<p class="detail">🍽️ 美食：<span>' + inv.food + '</span></p>' +
+'<p class="footer">期待和你的约会~ 💕</p></div></body></html>';
+
+  var blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '约会邀请函.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  alert('邀请函已下载！📩\n\n发送方式：\n1. 微信发送这个 HTML 文件给 ta\n2. 或用浏览器打开后截图发给 ta\n3. 文件保存在下载文件夹中');
+}
+
+// ── 页面加载时检查是否有保存的邀请 ──
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem('date-invitation');
+  if (saved) {
+    var inv = JSON.parse(saved);
+    selectedDateTime = inv.date;
+    selectedFood = inv.food;
+    window._invitation = inv;
+    document.getElementById('cardDate').textContent = inv.date;
+    document.getElementById('cardFood').textContent = inv.food;
+  }
+});
+</script>
+</body>
+</html>
